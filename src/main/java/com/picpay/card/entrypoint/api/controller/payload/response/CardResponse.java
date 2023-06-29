@@ -1,6 +1,5 @@
 package com.picpay.card.entrypoint.api.controller.payload.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 

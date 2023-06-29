@@ -3,7 +3,6 @@ package com.picpay.card.core.exception;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
-import java.util.Collection;
 import java.util.List;
 
 @Getter

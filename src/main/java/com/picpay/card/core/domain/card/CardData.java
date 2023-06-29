@@ -16,11 +16,11 @@ public class CardData {
     private String id = UUID.randomUUID().toString();
     private String cpf;
     private CardType type;
-    private String num_card;
-    private String conta_cartao;
-    private String sufixo;
+    private String numCard;
+    private String cardAccount;
+    private String suffix;
     private String cvv;
-    private String embossing_name;
+    private String embossingName;
     private CardVariant variant;
 
 }

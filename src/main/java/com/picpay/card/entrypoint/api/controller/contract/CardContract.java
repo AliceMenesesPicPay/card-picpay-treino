@@ -1,7 +1,6 @@
 package com.picpay.card.entrypoint.api.controller.contract;
 
 import com.picpay.card.core.common.utils.HeaderName;
-import com.picpay.card.core.domain.card.Card;
 import com.picpay.card.entrypoint.api.controller.payload.request.CardDataRequest;
 import com.picpay.card.entrypoint.api.controller.payload.response.CardResponse;
 import io.swagger.annotations.ApiOperation;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
-import java.util.List;
 
 public interface CardContract {
 

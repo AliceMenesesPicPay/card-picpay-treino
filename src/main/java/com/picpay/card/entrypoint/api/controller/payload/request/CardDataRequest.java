@@ -5,10 +5,8 @@ import com.picpay.card.core.domain.card.CardVariant;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.CreditCardNumber;
-import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.br.CPF;
 
-import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -26,19 +24,19 @@ public class CardDataRequest {
 
     @CreditCardNumber
     @NotBlank
-    private String num_card;
+    private String numCard;
 
     @NotBlank
-    private String conta_cartao;
+    private String cardAccount;
 
     @NotBlank
-    private String sufixo;
+    private String suffix;
 
     @Size(min = 3, max = 3)
     private String cvv;
 
     @NotBlank
-    private String embossing_name;
+    private String embossingName;
 
     @NotNull
     private CardVariant variant;

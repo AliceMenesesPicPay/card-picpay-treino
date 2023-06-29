@@ -1,5 +1,6 @@
 package com.picpay.card.core.domain.usecase;
 
+import com.picpay.card.core.common.utils.Crypto;
 import com.picpay.card.core.domain.card.Card;
 import com.picpay.card.core.domain.card.CardData;
 import com.picpay.card.core.domain.card.CardType;
@@ -12,6 +13,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.Cipher;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.PublicKey;
 import java.util.Arrays;
 
 @Service
@@ -20,6 +25,8 @@ public class CardRegistration {
 
     private final CardGateway cardGateway;
     private final ModelMapper modelMapper;
+
+    private static final String ALGORITHM = "RSA";
 
     public Card search(final String consumerId) {
         return cardGateway.search(consumerId).orElseThrow(() -> new CardNotFoundException(consumerId));
@@ -43,12 +50,19 @@ public class CardRegistration {
         }
 
         if (CardType.isFisico(cardData.getType())) {
-            cardGateway.findByConsumerIdAndCardsType(consumerId, cardData.getType()).ifPresent((status) -> {
+            cardGateway.findByConsumerIdAndCardsType(consumerId, cardData.getType()).ifPresent(status -> {
                 throw new ThereIsPhysicalCardException(consumerId);
             });
         }
 
+        encryptCardNumber(cardData);
+
         return cardGateway.save(card);
+    }
+
+    private void encryptCardNumber(CardData cardData) {
+        String numCard = Crypto.encrypt(cardData.getNumCard());
+        cardData.setNumCard(numCard);
     }
 
     public Card update(final String id, final String consumerId, final CardData cardData) {
@@ -64,10 +78,10 @@ public class CardRegistration {
         CardData cardData = card.getCardDataById(id);
         card.deleteCardData(cardData);
 
-        cardGateway.save(card);
-
         if (card.getAmountCardData() == 0) {
-
+            cardGateway.delete(card);
+        } else {
+            cardGateway.save(card);
         }
 
     }

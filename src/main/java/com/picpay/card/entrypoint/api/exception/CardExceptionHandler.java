@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class CardExceptionHandler {
@@ -24,7 +23,7 @@ public class CardExceptionHandler {
     @Autowired
     private MessageSource messageSource;
 
-    private final String messageFieldInvalid = "Um ou mais campos estão inválidos.";
+    private static final String MESSAGE_FIELD_INVALID = "Um ou mais campos estão inválidos.";
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiError> consumerCardNotFoundExceptionHandler(final EntityNotFoundException exception) {
@@ -60,13 +59,13 @@ public class CardExceptionHandler {
 
         List<String> descriptions = objectErrors.stream()
                 .map(objectError ->  messageSource.getMessage(objectError, LocaleContextHolder.getLocale()))
-                .collect(Collectors.toList());
+                .toList();
 
         int status = HttpStatus.BAD_REQUEST.value();
 
         ApiError apiError = ApiError.builder()
                 .status(status)
-                .description(messageFieldInvalid)
+                .description(MESSAGE_FIELD_INVALID)
                 .descriptions(descriptions)
                 .build();
 
