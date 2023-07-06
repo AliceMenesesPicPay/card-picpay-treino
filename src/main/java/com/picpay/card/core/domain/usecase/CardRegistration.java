@@ -3,9 +3,7 @@ package com.picpay.card.core.domain.usecase;
 import com.picpay.card.core.common.utils.Crypto;
 import com.picpay.card.core.domain.card.Card;
 import com.picpay.card.core.domain.card.CardData;
-import com.picpay.card.core.domain.card.CardType;
 import com.picpay.card.core.exception.CardNotFoundException;
-import com.picpay.card.core.exception.ThereIsPhysicalCardException;
 import com.picpay.card.core.gateway.CardGateway;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -13,11 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.Cipher;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.PublicKey;
-import java.util.Arrays;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -25,8 +19,6 @@ public class CardRegistration {
 
     private final CardGateway cardGateway;
     private final ModelMapper modelMapper;
-
-    private static final String ALGORITHM = "RSA";
 
     public Card search(final String consumerId) {
         return cardGateway.search(consumerId).orElseThrow(() -> new CardNotFoundException(consumerId));
@@ -41,18 +33,13 @@ public class CardRegistration {
 
         try {
             card = search(consumerId);
+            card.moreThanOnePhysicalCard(cardData);
             card.addCardData(cardData);
         } catch (CardNotFoundException e) {
             card = Card.builder()
                     .consumerId(consumerId)
-                    .cards(Arrays.asList(cardData))
+                    .cards(Collections.singletonList(cardData))
                     .build();
-        }
-
-        if (CardType.isFisico(cardData.getType())) {
-            cardGateway.findByConsumerIdAndCardsType(consumerId, cardData.getType()).ifPresent(status -> {
-                throw new ThereIsPhysicalCardException(consumerId);
-            });
         }
 
         encryptCardNumber(cardData);
@@ -60,15 +47,15 @@ public class CardRegistration {
         return cardGateway.save(card);
     }
 
-    private void encryptCardNumber(CardData cardData) {
-        String numCard = Crypto.encrypt(cardData.getNumCard());
-        cardData.setNumCard(numCard);
-    }
-
     public Card update(final String id, final String consumerId, final CardData cardData) {
+        cardData.setId(id);
+
         Card currentCard = search(consumerId);
 
         CardData currentCardData = currentCard.getCardDataById(id);
+        currentCard.moreThanOnePhysicalCard(cardData);
+        encryptCardNumber(cardData);
+
         modelMapper.map(cardData, currentCardData);
         return cardGateway.save(currentCard);
     }
@@ -84,6 +71,11 @@ public class CardRegistration {
             cardGateway.save(card);
         }
 
+    }
+
+    private void encryptCardNumber(CardData cardData) {
+        String numCard = Crypto.encrypt(cardData.getNumCard());
+        cardData.setNumCard(numCard);
     }
 
 }

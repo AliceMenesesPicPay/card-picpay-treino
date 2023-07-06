@@ -3,4 +3,4 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017
       database: card
-      uuid-representation=standard: standard
+      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy

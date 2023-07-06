@@ -32,8 +32,43 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.mockito:mockito-inline'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+	testImplementation 'com.tngtech.archunit:archunit-junit5:1.0.1'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+//jacoco {
+//	toolVersion = '0.8.7'
+//	reportsDirectory = file "$buildDir/jacoco"
+//}
+//
+//jacocoTestReport {
+//	dependsOn test
+//	reports {
+//		xml.required = true
+//		csv.required = false
+//		html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+//	}
+//	afterEvaluate {
+//		classDirectories.setFrom(files(classDirectories.files.collect {
+//			fileTree(dir: it,
+//					exclude: ["**/Application.*",
+//							  "**/logger/**",
+//							  "**/config/**",
+//							  "**/exception/**",
+//							  "**/enums/**",
+//							  "**/utils/**"
+//					]
+//			)
+//		}))
+//	}
+//}
+//
+//test {
+//	useJUnitPlatform()
+//	finalizedBy jacocoTestReport
+//}

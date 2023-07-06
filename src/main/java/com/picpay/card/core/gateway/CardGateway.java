@@ -11,7 +11,7 @@ public interface CardGateway {
 
     Optional<Card> search(String consumerId);
 
-    Optional<Card> findByConsumerIdAndCardsType(String consumerId, CardType cardType);
+//    Optional<Card> findByConsumerIdAndCardsType(String consumerId, CardType cardType);
 
     Card save(Card card);
 

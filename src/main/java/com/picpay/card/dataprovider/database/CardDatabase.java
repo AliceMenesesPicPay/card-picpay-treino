@@ -22,10 +22,10 @@ public class CardDatabase implements CardGateway {
         return cardRepository.findByConsumerId(consumerId);
     }
 
-    @Override
-    public Optional<Card> findByConsumerIdAndCardsType(String consumerId, CardType cardType) {
-        return cardRepository.findByConsumerIdAndCardsType(consumerId, cardType);
-    }
+//    @Override
+//    public Optional<Card> findByConsumerIdAndCardsType(String consumerId, CardType cardType) {
+//        return cardRepository.findByConsumerIdAndCardsType(consumerId, cardType);
+//    }
 
     @Override
     public Card save(Card card) {

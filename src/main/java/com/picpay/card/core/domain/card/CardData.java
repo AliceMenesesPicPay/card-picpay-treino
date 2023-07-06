@@ -1,14 +1,13 @@
 package com.picpay.card.core.domain.card;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.UUID;
 
 @Getter
 @Setter
+@Builder
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardData {
@@ -22,5 +21,6 @@ public class CardData {
     private String cvv;
     private String embossingName;
     private CardVariant variant;
+
 
 }

@@ -12,13 +12,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 
-@RequestMapping("/api/v1/card")
+@RequestMapping("/api/v1/cards")
 @RestController
 @RequiredArgsConstructor
 public class CardController implements CardContract {
@@ -28,15 +29,15 @@ public class CardController implements CardContract {
     private final CardDataMapper cardDataMapper;
 
     @Override
-    @GetMapping
+    @GetMapping("/consumer")
     public CardResponse search(final String consumerId) {
         Card card = cardRegistration.search(consumerId);
         return cardMapper.toResponse(card);
     }
 
     @Override
-    @GetMapping("/consumer")
-    public Page<CardResponse> list(Pageable pageable) {
+    @GetMapping
+    public Page<CardResponse> list(@PageableDefault Pageable pageable) {
         Page<Card> pageCards = cardRegistration.list(pageable);
 
         List<CardResponse> cards = cardMapper
