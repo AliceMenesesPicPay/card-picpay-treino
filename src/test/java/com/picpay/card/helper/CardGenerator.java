@@ -56,4 +56,10 @@ public class CardGenerator {
         return new PageImpl<>(cards, pageable, cards.size());
     }
 
+    public static Card generateCard(String consumerId, CardData cardData) {
+        return Card.builder()
+                .consumerId(consumerId)
+                .cards(List.of(cardData))
+                .build();
+    }
 }

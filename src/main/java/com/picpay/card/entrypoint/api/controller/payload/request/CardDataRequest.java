@@ -2,6 +2,7 @@ package com.picpay.card.entrypoint.api.controller.payload.request;
 
 import com.picpay.card.core.domain.card.CardType;
 import com.picpay.card.core.domain.card.CardVariant;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.CreditCardNumber;
@@ -13,6 +14,7 @@ import javax.validation.constraints.Size;
 
 @Getter
 @Setter
+@Builder
 public class CardDataRequest {
 
     @CPF
@@ -33,6 +35,7 @@ public class CardDataRequest {
     private String suffix;
 
     @Size(min = 3, max = 3)
+    @NotBlank
     private String cvv;
 
     @NotBlank
