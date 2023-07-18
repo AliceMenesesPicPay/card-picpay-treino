@@ -4,3 +4,7 @@ spring:
       uri: mongodb://localhost:27017
       database: card
       field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy
+
+card-account-config:
+  schema:
+  host:

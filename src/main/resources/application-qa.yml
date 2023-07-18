@@ -1,0 +1,3 @@
+card-account-config:
+  schema: http
+  host: card-account.ms.qa
