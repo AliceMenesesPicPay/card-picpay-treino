@@ -2,6 +2,7 @@ package com.picpay.card.core.domain.card;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -21,6 +22,7 @@ public class CardData {
     private String cvv;
     private String embossingName;
     private CardVariant variant;
+    private BigDecimal availableValue;
 
 
 }

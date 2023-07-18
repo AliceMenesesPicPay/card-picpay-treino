@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -21,5 +22,6 @@ public class CardDataResponse {
     private String cvv;
     private String embossingName;
     private CardVariant variant;
+    private BigDecimal availableValue;
 
 }

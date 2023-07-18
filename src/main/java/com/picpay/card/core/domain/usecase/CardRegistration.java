@@ -3,8 +3,11 @@ package com.picpay.card.core.domain.usecase;
 import com.picpay.card.core.common.utils.Crypto;
 import com.picpay.card.core.domain.card.Card;
 import com.picpay.card.core.domain.card.CardData;
+import com.picpay.card.core.exception.CardLimitNotApprovedException;
 import com.picpay.card.core.exception.CardNotFoundException;
+import com.picpay.card.core.gateway.CardAccountGateway;
 import com.picpay.card.core.gateway.CardGateway;
+import com.picpay.card.dataprovider.integration.cardaccount.payload.response.CreditInfoResponse;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -17,6 +20,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class CardRegistration {
 
+    private final CardAccountGateway cardAccountGateway;
     private final CardGateway cardGateway;
     private final ModelMapper modelMapper;
 
@@ -36,6 +40,14 @@ public class CardRegistration {
             card.moreThanOnePhysicalCard(cardData);
             card.addCardData(cardData);
         } catch (CardNotFoundException e) {
+            CreditInfoResponse creditInfoResponse = cardAccountGateway.getCreditInfo(consumerId);
+
+            if (!creditInfoResponse.getCredit()) {
+                throw new CardLimitNotApprovedException(consumerId);
+            }
+
+            cardData.setAvailableValue(creditInfoResponse.getAvailableValue());
+
             card = Card.builder()
                     .consumerId(consumerId)
                     .cards(Collections.singletonList(cardData))

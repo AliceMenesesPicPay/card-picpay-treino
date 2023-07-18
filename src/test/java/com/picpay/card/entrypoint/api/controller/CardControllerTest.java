@@ -117,7 +117,7 @@ public class CardControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String contentAsString = raddesult.getResponse().getContentAsString();
+        String contentAsString = result.getResponse().getContentAsString();
 
         CustomPage<CardResponse> realCardResponse = objectMapper.readValue(contentAsString, new TypeReference<CustomPage<CardResponse>>(){});
 
