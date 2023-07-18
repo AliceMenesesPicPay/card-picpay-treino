@@ -40,19 +40,20 @@ public class CardRegistration {
             card.moreThanOnePhysicalCard(cardData);
             card.addCardData(cardData);
         } catch (CardNotFoundException e) {
-            CreditInfoResponse creditInfoResponse = cardAccountGateway.getCreditInfo(consumerId);
-
-            if (!creditInfoResponse.getCredit()) {
-                throw new CardLimitNotApprovedException(consumerId);
-            }
-
-            cardData.setAvailableValue(creditInfoResponse.getAvailableValue());
 
             card = Card.builder()
                     .consumerId(consumerId)
                     .cards(Collections.singletonList(cardData))
                     .build();
         }
+
+        CreditInfoResponse creditInfoResponse = cardAccountGateway.getCreditInfo(consumerId);
+
+        if (!creditInfoResponse.isCredit()) {
+            throw new CardLimitNotApprovedException(consumerId);
+        }
+
+        cardData.setAvailableValue(creditInfoResponse.getAvailableValue());
 
         encryptCardNumber(cardData);
 

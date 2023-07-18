@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 @Data
 public class CreditInfoResponse {
 
-    private Boolean credit;
+    private boolean credit;
     private BigDecimal availableValue;
 
 }
