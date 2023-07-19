@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,7 +33,7 @@ public class CardGenerator {
     public static Optional<Card> generateWithOneCardData(String consumerId) {
         List<CardData> cardDataList = new ArrayList<>();
         cardDataList.add(CardDataGenerator.generateCardData("685947c0-889e-43d5-b505-1abdf44d7d48", "123123", "99023576012", "5348450217109187",
-                "201", CardVariant.BLACK, "9187", CardType.VIRTUAL, "Ana"));
+                "201", CardVariant.BLACK, "9187", CardType.VIRTUAL, "Ana", new BigDecimal("1000")));
 
         return Optional.ofNullable(Card.builder()
                 .consumerId(consumerId)

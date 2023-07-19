@@ -7,6 +7,8 @@ import com.picpay.card.helper.CardGenerator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -44,7 +46,7 @@ public class CardTest {
     @DisplayName("When the card data is physical and a physical card already exists then throw an exception")
     void whenCardDataIsPhysicalAndAPhysicalCardAlreadyExistsThenThrowAnException() {
         String id = "c90a3e59-5d7d-4e92-b73f-b77e806d89d9";
-        CardData cardData = CardDataGenerator.generateCardData(id, "any card account", "any cpf", "any num card", "any cvv", CardVariant.BLACK, "any suffix", CardType.FISICO, "any embossing name");
+        CardData cardData = CardDataGenerator.generateCardData(id, "any card account", "any cpf", "any num card", "any cvv", CardVariant.BLACK, "any suffix", CardType.FISICO, "any embossing name", new BigDecimal("1000"));
 
         String consumerId = "1";
         Card card = CardGenerator.generatePhysicalCard(consumerId).get();
@@ -61,7 +63,7 @@ public class CardTest {
         Card card = CardGenerator.generatePhysicalCard(consumerId).get();
 
         String id = card.getCards().get(0).getId();
-        CardData cardData = CardDataGenerator.generateCardData(id, "any card account", "any cpf", "any num card", "any cvv", CardVariant.BLACK, "any suffix", CardType.FISICO, "any embossing name");
+        CardData cardData = CardDataGenerator.generateCardData(id, "any card account", "any cpf", "any num card", "any cvv", CardVariant.BLACK, "any suffix", CardType.FISICO, "any embossing name", new BigDecimal("1000"));
 
         assertThatCode(() -> card.moreThanOnePhysicalCard(cardData)).doesNotThrowAnyException();
     }

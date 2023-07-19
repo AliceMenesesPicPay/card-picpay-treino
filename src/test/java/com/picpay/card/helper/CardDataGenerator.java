@@ -4,6 +4,7 @@ import com.picpay.card.core.domain.card.CardData;
 import com.picpay.card.core.domain.card.CardType;
 import com.picpay.card.core.domain.card.CardVariant;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,10 +15,10 @@ public class CardDataGenerator {
         List<CardData> cardDataList = new ArrayList<>();
 
         cardDataList.add(generateCardData("685947c0-889e-43d5-b505-1abdf44d7d48", "123123", "99023576012", "5348450217109187",
-                "201", CardVariant.BLACK, "9187", CardType.FISICO, "Ana"));
+                "201", CardVariant.BLACK, "9187", CardType.FISICO, "Ana", new BigDecimal("1000")));
 
         cardDataList.add(generateCardData("2c15ce18-2632-4491-8805-bd8a61a92bda", "123123", "99023576012", "5501488172193815",
-                "159", CardVariant.INTERNACIONAL, "3815", CardType.VIRTUAL, "Ana"));
+                "159", CardVariant.INTERNACIONAL, "3815", CardType.VIRTUAL, "Ana", new BigDecimal("1000")));
 
         return cardDataList;
     }
@@ -27,16 +28,16 @@ public class CardDataGenerator {
         List<CardData> cardDataList = new ArrayList<>();
 
         cardDataList.add(generateCardData("685947c0-889e-43d5-b505-1abdf44d7d48", "123123", "99023576012", "5348450217109187",
-                "201", CardVariant.BLACK, "9187", CardType.VIRTUAL, "Ana"));
+                "201", CardVariant.BLACK, "9187", CardType.VIRTUAL, "Ana", new BigDecimal("1000")));
 
         cardDataList.add(generateCardData("2c15ce18-2632-4491-8805-bd8a61a92bda", "123123", "99023576012", "5501488172193815",
-                "159", CardVariant.INTERNACIONAL, "3815", CardType.VIRTUAL, "Ana"));
+                "159", CardVariant.INTERNACIONAL, "3815", CardType.VIRTUAL, "Ana", new BigDecimal("1000")));
 
         return cardDataList;
     }
 
     public static CardData generateCardData(String id, String cardAccount, String cpf, String numCard,
-                                     String cvv, CardVariant variant, String suffix, CardType type, String embossingName) {
+                                            String cvv, CardVariant variant, String suffix, CardType type, String embossingName, BigDecimal availableValue) {
         return CardData.builder()
                 .id(id)
                 .cardAccount(cardAccount)
@@ -47,6 +48,7 @@ public class CardDataGenerator {
                 .suffix(suffix)
                 .type(type)
                 .embossingName(embossingName)
+                .availableValue(availableValue)
                 .build();
     }
 

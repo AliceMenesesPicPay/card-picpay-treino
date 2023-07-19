@@ -4,9 +4,12 @@ import com.picpay.card.core.domain.card.Card;
 import com.picpay.card.core.domain.card.CardData;
 import com.picpay.card.core.domain.card.CardType;
 import com.picpay.card.core.domain.card.CardVariant;
+import com.picpay.card.core.exception.CardLimitNotApprovedException;
 import com.picpay.card.core.exception.CardNotFoundException;
 import com.picpay.card.core.exception.ThereIsPhysicalCardException;
+import com.picpay.card.core.gateway.CardAccountGateway;
 import com.picpay.card.core.gateway.CardGateway;
+import com.picpay.card.dataprovider.integration.cardaccount.payload.response.CreditInfoResponse;
 import com.picpay.card.helper.CardDataGenerator;
 import com.picpay.card.helper.CardGenerator;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,6 +44,9 @@ class CardRegistrationTest {
 
     @Mock
     private ModelMapper modelMapper;
+
+    @Mock
+    private CardAccountGateway cardAccountGateway;
 
     @InjectMocks
     private CardRegistration cardRegistration;
@@ -84,21 +91,23 @@ class CardRegistrationTest {
     }
 
     @Test
-    @DisplayName("When creating a card data, allow only 1 physical card data per costumer, check if the customer already exists, encrypt the card data number and save it")
+    @DisplayName("When creating a card data, allow only 1 physical card data per costumer, check if the customer already exists, check your credit card limit, encrypt the card data number and save it")
     void whenCreateCardDataThenReturnSuccessfully() {
         CardData argumentCardData = CardDataGenerator.generateCardData(null, "123123", "99023576012", "5345902181142126",
-                "880", CardVariant.PLATINUM, "3815", CardType.FISICO, "Ana");
+                "880", CardVariant.PLATINUM, "3815", CardType.FISICO, "Ana", new BigDecimal("1000"));
 
         String consumerId = "1";
 
         Optional<Card> searchCardOptional = CardGenerator.generateOnlyVirtualCard(consumerId);
         when(cardGateway.search(consumerId)).thenReturn(searchCardOptional);
 
+        when(cardAccountGateway.getCreditInfo(consumerId)).thenReturn(new CreditInfoResponse(true, new BigDecimal("1000")));
+
         Optional<Card> saveCardOptional = CardGenerator.generateOnlyVirtualCard(consumerId);
         Card saveCard = saveCardOptional.get();
 
         CardData cardData = CardDataGenerator.generateCardData("7ca920f4-1aa6-11ee-be56-0242ac120002", "123123", "99023576012", "5345902181142126",
-                "880", CardVariant.PLATINUM, "3815", CardType.FISICO, "Ana");
+                "880", CardVariant.PLATINUM, "3815", CardType.FISICO, "Ana", new BigDecimal("1000"));
         saveCard.addCardData(cardData);
         when(cardGateway.save(cardCaptor.capture())).thenReturn(saveCard);
 
@@ -113,10 +122,72 @@ class CardRegistrationTest {
     }
 
     @Test
+    @DisplayName("When creating the first card data, allow only 1 physical card data per costumer, check if the consumer already exists, " +
+            "throw an exception since there are still no cards for the consumer, check your credit card limit, encrypt the card data number and save it")
+    void whenCreateTheFirstCardDataThenReturnSuccessfully() {
+        CardData argumentCardData = CardDataGenerator.generateCardData(null, "123123", "99023576012", "5345902181142126",
+                "880", CardVariant.PLATINUM, "3815", CardType.FISICO, "Ana", new BigDecimal("1000"));
+
+        String consumerId = "1";
+
+        when(cardGateway.search(consumerId)).thenReturn(Optional.empty());
+
+        when(cardAccountGateway.getCreditInfo(consumerId)).thenReturn(new CreditInfoResponse(true, new BigDecimal("1000")));
+
+        CardData expectedCardDataWithId = CardDataGenerator.generateCardData("685947c0-889e-43d5-b505-1abdf44d7d48", "123123", "99023576012", "5345902181142126",
+                "880", CardVariant.PLATINUM, "3815", CardType.FISICO, "Ana", new BigDecimal("1000"));
+
+        Card expectedCard = CardGenerator.generateCard(consumerId, expectedCardDataWithId);
+
+        when(cardGateway.save(any(Card.class))).thenReturn(expectedCard);
+
+        Card realCard = cardRegistration.create(consumerId, argumentCardData);
+
+        assertThat(realCard).usingRecursiveComparison().isEqualTo(expectedCard);
+    }
+
+    @Test
+    @DisplayName("When creating the first card data, allow only 1 physical card data per costumer, check if the consumer already exists, " +
+            "throw an exception since there are still no cards for the consumer, check your credit card limit, encrypt the card data number and save it")
+    void whenTryingToCreateTheFirstCardDataThatDoesNotHaveApprovedCreditThenThrowException() {
+        CardData argumentCardData = CardDataGenerator.generateCardData(null, "123123", "99023576012", "5345902181142126",
+                "880", CardVariant.PLATINUM, "3815", CardType.FISICO, "Ana", new BigDecimal("1000"));
+
+        String consumerId = "1";
+
+        when(cardGateway.search(consumerId)).thenReturn(Optional.empty());
+
+        when(cardAccountGateway.getCreditInfo(consumerId)).thenReturn(new CreditInfoResponse(false, null));
+
+        assertThatThrownBy(() -> cardRegistration.create(consumerId, argumentCardData))
+                .isInstanceOf(CardLimitNotApprovedException.class)
+                .hasMessage(String.format("O cartão não pode ser criado porque o consumidor de id %s não tem limite aprovado", consumerId));
+    }
+
+    @Test
+    @DisplayName("When creating the first card data, allow only 1 physical card data per costumer, check if the consumer already exists, " +
+            "throw an exception since there are still no cards for the consumer, check your credit card limit, encrypt the card data number and save it")
+    void whenTryingToCreateMoreCardsDataAndTheConsumerHasNoMoreApprovedCreditThenThrowException() {
+        CardData argumentCardData = CardDataGenerator.generateCardData(null, "123123", "99023576012", "5345902181142126",
+                "880", CardVariant.PLATINUM, "3815", CardType.FISICO, "Ana", new BigDecimal("1000"));
+
+        String consumerId = "1";
+
+        Optional<Card> searchCardOptional = CardGenerator.generateOnlyVirtualCard(consumerId);
+        when(cardGateway.search(consumerId)).thenReturn(searchCardOptional);
+
+        when(cardAccountGateway.getCreditInfo(consumerId)).thenReturn(new CreditInfoResponse(false, null));
+
+        assertThatThrownBy(() -> cardRegistration.create(consumerId, argumentCardData))
+                .isInstanceOf(CardLimitNotApprovedException.class)
+                .hasMessage(String.format("O cartão não pode ser criado porque o consumidor de id %s não tem limite aprovado", consumerId));
+    }
+
+    @Test
     @DisplayName("When creating the card validate for the consumer to have only 1 physical card")
     void whenTryingToCreateMoreThan1PhysicalCardDataThenThrowException() {
         CardData argumentCardData = CardDataGenerator.generateCardData(null, "123123", "99023576012", "5345902181142126",
-                "880", CardVariant.PLATINUM, "3815", CardType.FISICO, "Ana");
+                "880", CardVariant.PLATINUM, "3815", CardType.FISICO, "Ana", new BigDecimal("1000"));
 
         String consumerId = "1";
 
@@ -167,7 +238,7 @@ class CardRegistrationTest {
         String id = "685947c0-889e-43d5-b505-1abdf44d7d48";
         String consumerId = "1";
         CardData argumentCardData = CardDataGenerator.generateCardData(null, "123123", "99023576012", "5374859255631091",
-                "831", CardVariant.INTERNACIONAL, "1091", CardType.FISICO, "Ana");
+                "831", CardVariant.INTERNACIONAL, "1091", CardType.FISICO, "Ana", new BigDecimal("1000"));
 
         Optional<Card> searchCardOptional = CardGenerator.generatePhysicalCard(consumerId);
         when(cardGateway.search(consumerId)).thenReturn(searchCardOptional);
@@ -175,7 +246,7 @@ class CardRegistrationTest {
         Card expectedData = CardGenerator.generatePhysicalCard(consumerId).get();
         expectedData.getCards().remove(0);
         CardData expectedCardData = CardDataGenerator.generateCardData(id, "123123", "99023576012", "5374859255631091",
-                "831", CardVariant.INTERNACIONAL, "1091", CardType.FISICO, "Ana");
+                "831", CardVariant.INTERNACIONAL, "1091", CardType.FISICO, "Ana", new BigDecimal("1000"));
 
         when(cardGateway.save(any(Card.class))).thenReturn(expectedData);
 
@@ -193,7 +264,7 @@ class CardRegistrationTest {
         String id = "2c15ce18-2632-4491-8805-bd8a61a92bda";
         String consumerId = "1";
         CardData argumentCardData = CardDataGenerator.generateCardData(null, "123123", "99023576012", "5374859255631091",
-                "831", CardVariant.INTERNACIONAL, "1091", CardType.FISICO, "Ana");
+                "831", CardVariant.INTERNACIONAL, "1091", CardType.FISICO, "Ana", new BigDecimal("1000"));
 
         Optional<Card> searchCardOptional = CardGenerator.generatePhysicalCard(consumerId);
         when(cardGateway.search(consumerId)).thenReturn(searchCardOptional);
